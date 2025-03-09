@@ -1,5 +1,7 @@
 import { ChevronLeft, ChevronRight, Facebook, Instagram, Star, Twitter, Youtube } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom";
+import Button from '../components/Button';
 
 
 const testimonials = [
@@ -53,7 +55,7 @@ const HomePage = () => {
         setTimeout(() => setIsAnimating(false), 500);
       };
     
-
+    const navigate = useNavigate();
     return (
         <div className="min-h-screen bg-gray-900 text-gray-100">
         {/* Header */}
@@ -64,9 +66,7 @@ const HomePage = () => {
               <a href="#" className="text-lg hover:text-blue-400 transition">Home</a>
               <a href="#" className="text-lg hover:text-blue-400 transition">About</a>
               <a href="#" className="text-lg hover:text-blue-400 transition">Contact</a>
-              <button className="px-8 py-2 bg-blue-500 rounded-md hover:bg-blue-600 transition min-w-[120px] text-lg">
-              Login
-            </button>
+              <Button label="Sign Up" onClick={() => navigate("/signup")} size='small' />
             </div>
           </nav>
         </header>
@@ -80,9 +80,7 @@ const HomePage = () => {
             Effortlessly store, share, and find your memories organized by AI. Smart AI photo recognition
             helps keep your photos organized, making sure nothing gets lost.
           </p>
-          <button className="px-8 py-3 bg-blue-500 rounded-lg hover:bg-blue-600 transition text-lg">
-            Get Started
-          </button>
+          <Button label="Get Started" onClick={() => navigate("/signup")} size='medium' />
         </section>
   
         {/* Features Section */}
