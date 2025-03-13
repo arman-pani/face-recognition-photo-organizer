@@ -1,4 +1,5 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import AddFolderPage from "./pages/AddFolder";
 import DashboardPage from "./pages/Dashboard";
 import HomePage from './pages/Home';
 import LoginPage from "./pages/Login";
@@ -14,6 +15,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/add_folder" element={<AddFolderPage />} />
       </Routes>
     </Router>
   );

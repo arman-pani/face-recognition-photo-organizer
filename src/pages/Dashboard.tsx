@@ -1,4 +1,5 @@
 import { FaEllipsisV, FaFolder } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import Button from "../components/Button";
 
 const Sidebar = () => {
@@ -31,6 +32,7 @@ const FolderCard = () => {
 };
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
   return (
     <div className="flex h-screen bg-gray-900">
       <Sidebar />
@@ -41,7 +43,7 @@ const DashboardPage = () => {
         </div>
       </div>
       <div className="absolute bottom-8 right-8">
-        <Button label="Add a Folder" onClick={() => {}} icon={<FaFolder />} size='medium' />
+        <Button label="Add a Folder" onClick={() => navigate("/add_folder")} icon={<FaFolder />} size='medium' />
       </div>
     </div>
   );
