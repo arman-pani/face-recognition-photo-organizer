@@ -1,0 +1,21 @@
+
+// User Interface
+export interface User {
+    id: string;
+    name: string;
+    email: string;
+    folders: Folder[];
+  }
+  
+  // Folder Interface
+  export interface Folder {
+    _id?: string;
+    name: string;
+    client: string;
+    purpose: string;
+    photoCount: number;
+    webLink: string;
+    createdAt: Date;
+    photos: string[];
+  }
+  

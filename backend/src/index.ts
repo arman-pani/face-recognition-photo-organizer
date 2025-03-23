@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
 import authRoutes from "./routes/authRoutes";
+import folderRoutes from "./routes/folderRoutes";
+
 
 dotenv.config();
 
@@ -17,5 +19,6 @@ mongoose.connect(process.env.MONGO_URI as string)
   .catch((error) => console.log("MongoDB Error:", error));
 
 app.use("/api/auth", authRoutes);  // Routes for authentication
+app.use("/api/folders", folderRoutes);  // Routes for folders
 
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

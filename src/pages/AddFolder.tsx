@@ -1,72 +1,56 @@
 import { QRCodeCanvas } from "qrcode.react";
-import React, { useState } from "react";
+import { useState } from "react";
 import Button from "../components/Button";
 import InputField from "../components/InputField";
+import { useAuth } from "../context/AuthContext";
+import { Folder } from "../dataTypes";
+import {
+  copyToClipboard,
+  downloadQRCode,
+  generateFolderLink,
+  generateQRcode,
+  handleBackgroundImageUpload
+} from "../utils/folderLinkMethods";
+import { addFolder } from "../utils/folderMethods";
+
+
+
 
 const AddFolderPage = () => {
+  const { user } = useAuth(); 
+  const userId = user!.id ;
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    folderName: "",
-    clientName: "",
-    purpose: "",
-  });
-
-  const [qrLink, setQrLink] = useState("wedlinker.com/" + Math.random().toString(36).substring(7));
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+  const [folderName, setFolderName] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [webLink, setWebLink] = useState(generateFolderLink());
+  const [folderData, setFolderData] = useState<Folder | null>(null);
 
-  // Copy link to clipboard
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(qrLink);
-      alert("Copied to clipboard!");
-    } catch (err) {
-      console.error("Failed to copy:", err);
-    }
-  };
 
-  const nextStep = () => setStep((prev) => prev + 1);
-  const prevStep = () => setStep((prev) => prev - 1);
 
-  // Handle input field changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  // Handle image upload for QR background
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-      if (e.target?.result) {
-        setBackgroundImage(e.target.result as string);
-      }
+  const handleCreateFolder = async () => {
+    const newFolder: Omit<Folder, "photoCount" | "createdAt"> = {
+      name: folderName,
+      client: clientName,
+      purpose,
+      webLink,
     };
-    reader.readAsDataURL(file);
-  };
 
-  // QR Code download
-  const downloadQRCode = () => {
-    const canvas = document.getElementById("qrcode") as HTMLCanvasElement | null;
-    if (!canvas) {
-      console.error("QR Code canvas not found");
-      return;
+    const response = await addFolder(userId, newFolder);
+    if (response) {
+      setFolderData(response.folder);
+      setStep(3);
+    } else {
+      alert("Failed to create folder. Please try again.");
     }
-    const url = canvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "QRCode.png";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
+  
+  const isFormValid = folderName.trim() && clientName.trim() && purpose.trim();
 
-    const [folderName, setFolderName] = useState("");
-    const [clientName, setClientName] = useState("");
-    const [purpose, setPurpose] = useState("");
-
+  if (!userId) {
+    return <p>Loading...</p>; // Handle case where userId is not available
+  }
 
 
   return (
@@ -84,7 +68,7 @@ const AddFolderPage = () => {
           <div className="my-2" />
           <InputField type="text" placeholder="Enter Purpose" value={purpose} onChange={(e) => setPurpose(e.target.value)} />
           <div className="my-4" />
-          <Button label="Next" onClick={nextStep} size="large" />
+          <Button label="Next" onClick={() => setStep(2)} disabled={!isFormValid} size="large" />
             
         </div>
         </div>
@@ -111,18 +95,18 @@ const AddFolderPage = () => {
       
       {/* QR Code Container at the Top */}
       <div className="relative w-48 h-48 flex items-center justify-center bg-opacity-50 rounded-md mt-8">
-        <QRCodeCanvas id="qrcode" value={qrLink} size={150} />
+        <QRCodeCanvas id="qrcode" value={webLink} size={150} />
       </div>
     </div>
 
             <div className="flex flex-col w-full">
               <label className="text-gray-400 mb-1">Attach a background image</label>
-              <input type="file" onChange={handleImageUpload} className="p-2 bg-gray-700 rounded-md mb-4" />
+              <input type="file" onChange={(e) => handleBackgroundImageUpload(e, setBackgroundImage)} className="p-2 bg-gray-700 rounded-md mb-4" />
 
               <label className="text-gray-400 mb-1">Link:</label>
               <div className="flex items-center bg-gray-700 p-2 rounded-md">
-                <span className="flex-grow truncate">{qrLink}</span>
-                <button onClick={copyToClipboard} className="ml-2 bg-gray-600 px-3 py-1 rounded text-white">
+                <span className="flex-grow truncate">{webLink}</span>
+                <button onClick={() => copyToClipboard(webLink)} className="ml-2 bg-gray-600 px-3 py-1 rounded text-white">
                   Copy it
                 </button>
               </div>
@@ -144,8 +128,8 @@ const AddFolderPage = () => {
 
 
           <div className="mt-4 flex w-full justify-between">
-          <Button label="Back" onClick={prevStep} size="medium" />
-          <Button label="Create" onClick={nextStep} size="medium" />
+          <Button label="Back" onClick={() => setStep(1)} size="medium" />
+          <Button label="Create" onClick={handleCreateFolder} size="medium" />
 
         </div>
 
@@ -155,10 +139,20 @@ const AddFolderPage = () => {
       )}
 
       {/* Step 3: Folder Created Page */}
-      {step === 3 && (
+      
+      {step === 3 && folderData && (
         <div className="text-center">
           <h2 className="text-2xl font-bold text-green-400">✅ Folder Created Successfully!</h2>
-          <p>You have successfully created a new folder.</p>
+          <p><strong>Name:</strong> {folderData.name}</p>
+          <p><strong>Client:</strong> {folderData.client}</p>
+          <p><strong>Purpose:</strong> {folderData.purpose}</p>
+          <p><strong>Photos:</strong> {folderData.photoCount}</p>
+          <p><strong>Web Link:</strong> {folderData.webLink}</p>
+
+          <div className="mt-4">
+            {generateQRcode({ id: "finalQRCode", value: folderData.webLink, size: 150 })}
+          </div>
+
           <button onClick={() => setStep(1)} className="mt-4 bg-blue-600 px-6 py-2 rounded-md">
             Create Another Folder
           </button>
